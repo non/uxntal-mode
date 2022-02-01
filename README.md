@@ -4,8 +4,9 @@ Emacs major mode for the [uxntal](https://wiki.xxiivv.com/site/uxntal.html) asse
 
 ## installing the mode
 
-Currently you must install the mode manually. Copy `tal-mode.el` to the
-desired location and then modify `init.el`:
+Currently you must install the mode manually.
+
+Copy `tal-mode.el` to the desired location and then modify `init.el`:
 
 ```elisp
 ;; ensure the directory containing tal-mode.el is mentioned
