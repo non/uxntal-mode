@@ -33,3 +33,4 @@ Future features:
 ## see also
 
 https://github.com/xaderfos/uxntal-mode
+https://github.com/rafapaezbas/uxntal-mode
