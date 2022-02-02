@@ -148,15 +148,26 @@
 ;; up correctly rather than "catching" situations where comments
 ;; aren't correctly padded. sorry! :/
 (defvar tal-mode-syntax-table
-  (let ((table (make-syntax-table)))
+  (let ((table (make-syntax-table))
+        (c 0))
+    (while (< c ?!)
+      (modify-syntax-entry c " " table)
+      (setq c (1+ c)))
+    ;; treat almost all printable characters as word characters
+    (while (< c 127)
+      (modify-syntax-entry c "w" table)
+      (setq c (1+ c)))
     ;;;; definitions to make commented regions stricter
     ;; (modify-syntax-entry ?\( "()1nb" table)
     ;; (modify-syntax-entry ?\) ")(4nb" table)
     ;; (modify-syntax-entry ?\s " 123" table)
     (modify-syntax-entry ?\( "<)nb" table)
     (modify-syntax-entry ?\) ">(nb" table)
-    (modify-syntax-entry ?\" "w" table)
-    (modify-syntax-entry ?\' "w" table)
+    ;; delimiters, ignored by uxnasm
+    (modify-syntax-entry ?\[ "(]" table)
+    (modify-syntax-entry ?\] ")[" table)
+    (modify-syntax-entry ?\{ "(}" table)
+    (modify-syntax-entry ?\} "){" table)
     table)
   "Syntax table in use in `tal-mode' buffers.")
 
@@ -184,10 +195,23 @@
         (set (make-local-variable 'compile-command)
              (concat "uxnasm " in " " out)))))
 
+;; regex to strip prefix from numbers like #99 |0100 $8
+(defconst extract-number-re
+  (rx (seq bot (opt (in "#|$")) (group (1+ (in "0-9a-f"))) eot)))
+
 ;; function to interpret hex numbers as decimal
 (defun tal-decimal-value ()
+  "Translate hexadecimal numbers to decimal"
   (interactive)
-  (message (number-to-string (string-to-number (current-word t t) 16))))
+  (let ((word (current-word t t)))
+    (if (eq word nil)
+      (message "No word selected")
+      (let ((m (string-match extract-number-re word)))
+        (if (eq m nil)
+          (message "`%s' is not a number" word)
+          (let* ((s (match-string 1 word))
+                 (n (string-to-number s 16)))
+            (message "Decimal value of `%s' is %d" word n)))))))
 
 ;; provide mode
 (provide 'tal-mode)
