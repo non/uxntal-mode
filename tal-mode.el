@@ -22,61 +22,64 @@
 
 ;; macro definitions like %MOD
 (defconst tal-mode-macro-define-re
-  (rx (group "%" (1+ (not (in space))))))
+  (rx (group "%" (1+ (not (in space))) eow)))
 
 ;; includes like ~util.tal
 (defconst tal-mode-include-re
-  (rx (group "~" (1+ (not (in space))))))
+  (rx (group "~" (1+ (not (in space))) eow)))
 
 ;; labels like @foo
 (defconst tal-mode-label-define-re
-  (rx (group "@" (1+ (not (in space))))))
+  (rx (group "@" (1+ (not (in space))) eow)))
 
 ;; subabels like &bar
 (defconst tal-mode-sublabel-define-re
-  (rx (group "&" (1+ (not (in space))))))
+  (rx (group "&" (1+ (not (in space))) eow)))
 
 ;; raw characters like 'a or '[
 (defconst tal-mode-raw-char-re
-  (rx (group "'" (in "!-~"))))
+  (rx (group "'" (in "!-~") eow)))
 
 ;; raw strings like "foo or "a-b-c-d-e
 (defconst tal-mode-raw-str-re
-  (rx (group "\"" (1+ (in "!-~")))))
+  (rx (group "\"" (1+ (in "!-~")) eow)))
 
 ;; absolute pads like |a0 or |0100
 (defconst tal-mode-absolute-pad-re
   (rx (group
        "|"
        (repeat 2 (in "0-9a-f"))
-       (\? (repeat 2 (in "0-9a-f"))))))
+       (\? (repeat 2 (in "0-9a-f")))
+       eow)))
 
 ;; pads like $1 $1f $300 $1000
 (defconst tal-mode-relative-pad-re
-  (rx (group "$" (repeat 1 4 (in "0-9a-f")))))
+  (rx (group "$" (repeat 1 4 (in "0-9a-f")) eow)))
 
 ;; addresses such as .foo ,bar ;baz :qux
 (defconst tal-mode-addr-zeropage-re
-  (rx (group "." (1+ (not (in space))))))
+  (rx (group "." (1+ (not (in space))) eow)))
 (defconst tal-mode-addr-relative-re
-  (rx (group "," (1+ (not (in space))))))
+  (rx (group "," (1+ (not (in space))) eow)))
 (defconst tal-mode-addr-absolute-re
-  (rx (group ";" (1+ (not (in space))))))
+  (rx (group ";" (1+ (not (in space))) eow)))
 (defconst tal-mode-addr-raw-re
-  (rx (group ":" (1+ (not (in space))))))
+  (rx (group ":" (1+ (not (in space))) eow)))
 
 ;; literal numbers like #ff or #abcd
 (defconst tal-mode-number-re
   (rx (group
        "#"
        (repeat 2 (in "0-9a-f"))
-       (\? (repeat 2 (in "0-9a-f"))))))
+       (\? (repeat 2 (in "0-9a-f")))
+       eow)))
 
 ;; raw numbers like ff or abcd
 (defconst tal-mode-raw-number-re
   (rx (group
        (repeat 2 (in "0-9a-f"))
-       (\? (repeat 2 (in "0-9a-f"))))))
+       (\? (repeat 2 (in "0-9a-f")))
+       eow)))
 
 ;; tal instructions like ADD or JMP2r
 (defconst tal-mode-inst-re
@@ -90,13 +93,19 @@
                       "DEI" "DEO"
                       "ADD" "SUB" "MUL" "DIV"
                       "AND" "ORA" "EOR" "SFT")
-                  (\? "2") (\? "k") (\? "r"))))))
+                  (\? "2") (\? "k") (\? "r")))
+       eow)))
 
 ;; all previous rules joined together into a list
 (defconst tal-font-lock-keywords-1
   (list
    ;; macros (%)
    (list tal-mode-macro-define-re 1 font-lock-keyword-face)
+   ;; addresses (. , ; :)
+   (list tal-mode-addr-zeropage-re 1 font-lock-variable-name-face)
+   (list tal-mode-addr-relative-re 1 font-lock-variable-name-face)
+   (list tal-mode-addr-absolute-re 1 font-lock-variable-name-face)
+   (list tal-mode-addr-raw-re 1 font-lock-variable-name-face)
    ;; labels (@ &)
    (list tal-mode-label-define-re 1 font-lock-function-name-face)
    (list tal-mode-sublabel-define-re 1 font-lock-function-name-face)
@@ -105,11 +114,6 @@
    (list tal-mode-relative-pad-re 1 font-lock-preprocessor-face)
    ;; includes (~)
    (list tal-mode-include-re 1 font-lock-preprocessor-face)
-   ;; addresses (. , ; :)
-   (list tal-mode-addr-zeropage-re 1 font-lock-variable-name-face)
-   (list tal-mode-addr-relative-re 1 font-lock-variable-name-face)
-   (list tal-mode-addr-absolute-re 1 font-lock-variable-name-face)
-   (list tal-mode-addr-raw-re 1 font-lock-variable-name-face)
    ;; instructions
    (list tal-mode-inst-re 1 font-lock-builtin-face)
    ;; constant numbers (#)
