@@ -14,6 +14,7 @@
 (defvar tal-mode-map
   (let ((map (make-keymap)))
     (define-key map (kbd "C-c d") 'tal-decimal-value)
+    (define-key map (kbd "C-c i") 'tal-decode-inst)
     map)
   "Keymap for Tal major mode")
 
@@ -216,6 +217,67 @@
           (let* ((s (match-string 1 word))
                  (n (string-to-number s 16)))
             (message "Decimal value of `%s' is %d" word n)))))))
+
+(defconst tal-mode-instructions
+  (let ((m (make-hash-table :test 'equal :size 32)))
+    (puthash "BRK" (vector "Break" '(() . ()) nil "halt the program") m)
+    (puthash "LIT" (vector "Literal" '(() . ("a")) nil "push the next value onto the stack") m)
+    (puthash "INC" (vector "Increment" '(("a") . ("b")) nil "adds one to the top of the stack") m)
+    (puthash "POP" (vector "Pop" '(("a") . ("")) nil "remove the top of the stack") m)
+    (puthash "DUP" (vector "Duplicate" '(("a") . ("a" "a")) nil "duplicate the top of the stack") m)
+    (puthash "NIP" (vector "Nip" '(("a" "b") . ("b")) nil "remove the second value (a)") m)
+    (puthash "SWP" (vector "Swap" '(("a" "b") . ("b" "a")) nil "swap the top two stack values") m)
+    (puthash "OVR" (vector "Over" '(("a" "b") . ("a" "b" "a")) nil "duplicate the second value (a) to the top of the stack") m)
+    (puthash "ROT" (vector "Rotate" '(("a" "b" "c") . ("b" "c" "a")) nil "rotate the top three values to the left") m)
+    m))
+
+(defun tal-format-stack (pair glyph)
+  (defun decorate (name)
+    (if (or (string-suffix-p "^" name)
+            (string-suffix-p "*" name))
+        name
+      (concat name glyph)))
+  (defun myformat (xs)
+    (mapconcat 'decorate xs " "))
+  (let ((ins (myformat (car pair)))
+        (outs (myformat (cdr pair))))
+    (format "%s -> %s" ins outs)))
+
+(defun tal-decode-inst ()
+  "Translate hexadecimal numbers to decimal"
+  (interactive)
+  (let ((word (current-word t t)))
+    (if (eq word nil)
+      (message "No word selected")
+      (let ((m (string-match tal-mode-inst-re word)))
+        (if (eq m nil)
+          (message "`%s' is not an instruction" word)
+          (let* ((base (substring word 0 3))
+                 (info (gethash base tal-mode-instructions))
+                 (name (aref info 0))
+                 (s0 (aref info 1))
+                 (s1 (aref info 2))
+                 (doc (aref info 3)))
+            (setq ws (if (seq-contains word ?r) s1 s0))
+            (setq rs (if (seq-contains word ?r) s0 s1))
+            (setq glyph (if (seq-contains word ?2) ?* ?^))
+            ;; (when (and ws (seq-contains word ?k)) (setq ws (cons (car ws) (append (car ws) (cdr
+            (message "Info for `%s' was `%s' (%s) [%s]" base info (tal-format-stack ws "^") rs)))))))
+
+;; TOKEN   ACTION
+;; INC     show built-in definition
+;; #ff     show decimal value
+;; ff      show decimal value
+;; 'c      character literal
+;; "abc    string literal
+;; xyz     search above for %xyz
+;; :xyz    search globally for @xyz
+;; ;xyz    search globally for @xyz
+;; .xyz    search globally for @xyz
+;; ,@xyz   search globally for @xyz
+;; ,&xyz   search within label for &xyz
+;; ~xyz    open file called xyz
+
 
 ;; provide mode
 (provide 'tal-mode)
