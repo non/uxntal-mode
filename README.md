@@ -24,7 +24,7 @@ Currently-supported features:
  * Syntax highlighting
  * Invoking `uxnasm` via `M-x compile`
  * Interpreting hex numbers as decimal (`tal-decimal-value`, `C-c d`)
- * Decoding Uxntal instructions (`tal-decode-instruction, ``C-c i`)
+ * Decoding Uxntal instructions (`tal-decode-instruction`, `C-c i`)
 
 Future features:
 
