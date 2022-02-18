@@ -34,6 +34,10 @@ Future features:
  * ASCII conversions
  * Input string literal as bytes
 
+## screenshot
+
+![tal-mode screenshot](http://plastic-idolatry.com/erik/nxu/tal-mode1.png)
+
 ## see also
 
  * https://github.com/xaderfos/uxntal-mode
