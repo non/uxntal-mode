@@ -223,7 +223,7 @@
     (puthash "BRK" (vector "Break" '(() . ()) nil "halt the program") m)
     (puthash "LIT" (vector "Literal" '(() . ("a")) nil "push the next value onto the stack") m)
     (puthash "INC" (vector "Increment" '(("a") . ("b")) nil "adds one to the top of the stack") m)
-    (puthash "POP" (vector "Pop" '(("a") . ("")) nil "remove the top of the stack") m)
+    (puthash "POP" (vector "Pop" '(("a") . ()) nil "remove the top of the stack") m)
     (puthash "DUP" (vector "Duplicate" '(("a") . ("a" "a")) nil "duplicate the top of the stack") m)
     (puthash "NIP" (vector "Nip" '(("a" "b") . ("b")) nil "remove the second value (a)") m)
     (puthash "SWP" (vector "Swap" '(("a" "b") . ("b" "a")) nil "swap the top two stack values") m)
@@ -233,7 +233,7 @@
     (puthash "NEQ" (vector "Not Equal" '(("a" "b") . ("bool^")) nil "push 01 if a != b; push 00 otherwise") m)
     (puthash "GTH" (vector "Greater Than" '(("a" "b") . ("bool^")) nil "push 01 if a > b; push 00 otherwise") m)
     (puthash "JMP" (vector "Jump" '(("addr") . ()) nil "modify the pc using addr") m)
-    (puthash "JCN" (vector "Jump Conditional" '(("bool^", "addr") . ()) nil "if bool != 00, modify the pc using addr") m)
+    (puthash "JCN" (vector "Jump Conditional" '(("bool^" "addr") . ()) nil "if bool != 00, modify the pc using addr") m)
     (puthash "JSR" (vector "Jump Stash Return" '(("addr") . ()) '(() . ("pc")) "store pc onto return stack; modify pc using addr") m)
     (puthash "STH" (vector "Stash" '(("a") . ()) '(() . ("a")) "move the top of the stack to the return stack") m)
     (puthash "LTH" (vector "Less Than" '(("a" "b") . ("bool^")) nil "push 01 if a < b; push 00 otherwise") m)
@@ -271,6 +271,10 @@
 (defun tal-decode-inst ()
   "Translate hexadecimal numbers to decimal"
   (interactive)
+  (defun setup-keep (st)
+    (let ((in (car st))
+          (out (cdr st)))
+      (cons in (append in out))))
   (let ((word (current-word t t)))
     (if (eq word nil)
       (message "No word selected")
@@ -283,11 +287,20 @@
                  (s0 (aref info 1))
                  (s1 (aref info 2))
                  (doc (aref info 3)))
+            ;; set up stacks based on the bitflags given
+            ;; 2 -> use 16-bit values (*) instead of 8-bit (^)
+            ;; k -> keep inputs on stack
+            ;; r -> swap working stack (ws) and return stack (rs)
             (setq ws (if (seq-contains word ?r) s1 s0))
+            (setq ws (if (seq-contains word ?k) (setup-keep ws) ws))
             (setq rs (if (seq-contains word ?r) s0 s1))
-            (setq glyph (if (seq-contains word ?2) ?* ?^))
-            ;; (when (and ws (seq-contains word ?k)) (setq ws (cons (car ws) (append (car ws) (cdr
-            (message "Info for `%s' was `%s' (%s) [%s]" base info (tal-format-stack ws "^") rs)))))))
+            (setq rs (if (seq-contains word ?k) (setup-keep rs) rs))
+            (setq glyph (if (seq-contains word ?2) "*" "^"))
+            ;; create full string representation of stacks,
+            ;; with delimiters and whitespace
+            (setq wss (if ws (concat "(" (tal-format-stack ws glyph) ") ") ""))
+            (setq rss (if rs (concat "{" (tal-format-stack rs glyph) "} ") ""))
+            (message "%s %s%s%s: %s" word wss rss name doc)))))))
 
 ;; TOKEN   ACTION
 ;; INC     show built-in definition
