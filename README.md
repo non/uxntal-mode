@@ -23,12 +23,16 @@ Currently-supported features:
 
  * Syntax highlighting
  * Invoking `uxnasm` via `M-x compile`
- * Interpreting hex numbers as decimal (`C-c d`)
+ * Interpreting hex numbers as decimal (`tal-decimal-value`, `C-c d`)
+ * Decoding Uxntal instructions (`tal-decode-instruction, ``C-c i`)
 
 Future features:
 
- * Display instruction docs, stack effect
  * Support for goto-definition (`M-.`)
+ * Support more general "what is this word?"
+ * Decimal -> hexadecimal conversions
+ * ASCII conversions
+ * Input string literal as bytes
 
 ## see also
 
