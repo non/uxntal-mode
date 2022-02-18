@@ -1,8 +1,12 @@
-;; tal-mode.el
-;;
-;; by d_m
-;;
-;; prior art: https://github.com/xaderfos/uxntal-mode
+;;; tal-mode.el -- Major mode for Uxntal assembly.   -*- lexical-binding: t -*-
+
+;; Author: d_m
+
+;;; Commentary:
+
+;; Prior art: https://github.com/xaderfos/uxntal-mode
+
+;;; Code:
 
 ;; use rx for regular expressions
 (require 'rx)
@@ -14,63 +18,63 @@
 (defvar tal-mode-map
   (let ((map (make-keymap)))
     (define-key map (kbd "C-c d") 'tal-decimal-value)
-    (define-key map (kbd "C-c i") 'tal-decode-inst)
+    (define-key map (kbd "C-c i") 'tal-decode-instruction)
     map)
-  "Keymap for Tal major mode")
+  "Keymap for Tal major mode.")
 
 ;; open .tal files with this mode
 (add-to-list 'auto-mode-alist '("\\.tal\\'" . tal-mode))
 
 ;; macro definitions like %MOD
 (defconst tal-mode-macro-define-re
-  (rx (group "%" (1+ (not (in space))) eow)))
+  (rx (group bow "%" (1+ (not (in space))) eow)))
 
 ;; includes like ~util.tal
 (defconst tal-mode-include-re
-  (rx (group "~" (1+ (not (in space))) eow)))
+  (rx (group bow "~" (1+ (not (in space))) eow)))
 
 ;; labels like @foo
 (defconst tal-mode-label-define-re
-  (rx (group "@" (1+ (not (in space))) eow)))
+  (rx (group bow "@" (1+ (not (in space))) eow)))
 
 ;; subabels like &bar
 (defconst tal-mode-sublabel-define-re
-  (rx (group "&" (1+ (not (in space))) eow)))
+  (rx (group bow "&" (1+ (not (in space))) eow)))
 
 ;; raw characters like 'a or '[
 (defconst tal-mode-raw-char-re
-  (rx (group "'" (in "!-~") eow)))
+  (rx (group bow "'" (in "!-~") eow)))
 
 ;; raw strings like "foo or "a-b-c-d-e
 (defconst tal-mode-raw-str-re
-  (rx (group "\"" (1+ (in "!-~")) eow)))
+  (rx (group bow "\"" (1+ (in "!-~")) eow)))
 
 ;; absolute pads like |a0 or |0100
 (defconst tal-mode-absolute-pad-re
   (rx (group
-       "|"
+       bow "|"
        (repeat 2 (in "0-9a-f"))
        (\? (repeat 2 (in "0-9a-f")))
        eow)))
 
 ;; pads like $1 $1f $300 $1000
 (defconst tal-mode-relative-pad-re
-  (rx (group "$" (repeat 1 4 (in "0-9a-f")) eow)))
+  (rx (group bow "$" (repeat 1 4 (in "0-9a-f")) eow)))
 
 ;; addresses such as .foo ,bar ;baz :qux
 (defconst tal-mode-addr-zeropage-re
-  (rx (group "." (1+ (not (in space))) eow)))
+  (rx (group bow "." (1+ (not (in space))) eow)))
 (defconst tal-mode-addr-relative-re
-  (rx (group "," (1+ (not (in space))) eow)))
+  (rx (group bow "," (1+ (not (in space))) eow)))
 (defconst tal-mode-addr-absolute-re
-  (rx (group ";" (1+ (not (in space))) eow)))
+  (rx (group bow ";" (1+ (not (in space))) eow)))
 (defconst tal-mode-addr-raw-re
-  (rx (group ":" (1+ (not (in space))) eow)))
+  (rx (group bow ":" (1+ (not (in space))) eow)))
 
 ;; literal numbers like #ff or #abcd
 (defconst tal-mode-number-re
   (rx (group
-       "#"
+       bow "#"
        (repeat 2 (in "0-9a-f"))
        (\? (repeat 2 (in "0-9a-f")))
        eow)))
@@ -78,13 +82,14 @@
 ;; raw numbers like ff or abcd
 (defconst tal-mode-raw-number-re
   (rx (group
+       bow
        (repeat 2 (in "0-9a-f"))
        (\? (repeat 2 (in "0-9a-f")))
        eow)))
 
 ;; tal instructions like ADD or JMP2r
 (defconst tal-mode-inst-re
-  (rx (group
+  (rx (group bow
        (or "BRK"
            (group "LIT" (\? "2") (\? "r"))
            (group (or "INC" "POP" "DUP" "NIP" "SWP" "OVR" "ROT"
@@ -178,7 +183,7 @@
 
 ;; set up mode
 (defun tal-mode ()
-  "Major mode for editing Tal files"
+  "Major mode for editing Tal files."
   (interactive)
   (kill-all-local-variables)
   (set-syntax-table tal-mode-syntax-table)
@@ -206,7 +211,7 @@
 
 ;; function to interpret hex numbers as decimal
 (defun tal-decimal-value ()
-  "Translate hexadecimal numbers to decimal"
+  "Translate hexadecimal numbers to decimal."
   (interactive)
   (let ((word (current-word t t)))
     (if (eq word nil)
@@ -218,6 +223,8 @@
                  (n (string-to-number s 16)))
             (message "Decimal value of `%s' is %d" word n)))))))
 
+;; Constructs a table of metadata about every instruction.
+;; This table powers tal-decode-instruction.
 (defconst tal-mode-instructions
   (let ((m (make-hash-table :test 'equal :size 32)))
     (puthash "BRK" (vector "Break" '(() . ()) nil "halt the program") m)
@@ -257,6 +264,7 @@
     m))
 
 (defun tal-format-stack (pair glyph)
+  "Format the given stack PAIR as stack effects using GLYPH."
   (defun decorate (name)
     (if (or (string-suffix-p "^" name)
             (string-suffix-p "*" name))
@@ -268,8 +276,8 @@
         (outs (myformat (cdr pair))))
     (format "%s -> %s" ins outs)))
 
-(defun tal-decode-inst ()
-  "Translate hexadecimal numbers to decimal"
+(defun tal-decode-instruction ()
+  "Translate hexadecimal numbers to decimal."
   (interactive)
   (defun setup-keep (st)
     (let ((in (car st))
@@ -319,3 +327,5 @@
 
 ;; provide mode
 (provide 'tal-mode)
+
+;;; tal-mode.el ends here
