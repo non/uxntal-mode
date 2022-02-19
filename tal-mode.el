@@ -310,19 +310,29 @@
             (setq rss (if rs (concat "{" (tal-format-stack rs glyph) "} ") ""))
             (message "%s %s%s%s: %s" word wss rss name doc)))))))
 
-;; TOKEN   ACTION
-;; INC     show built-in definition
-;; #ff     show decimal value
-;; ff      show decimal value
-;; 'c      character literal
-;; "abc    string literal
-;; xyz     search above for %xyz
-;; :xyz    search globally for @xyz
-;; ;xyz    search globally for @xyz
-;; .xyz    search globally for @xyz
-;; ,@xyz   search globally for @xyz
-;; ,&xyz   search within label for &xyz
-;; ~xyz    open file called xyz
+;; TOKEN      ACTION
+
+;; INC        show built-in definition
+;; #ff        show decimal value
+;; ff         show decimal value
+;; 'c         character literal
+;; "abc       string literal
+;; ~xyz       find file called xyz
+
+;; xyz        search above for %xyz
+
+;; .xyz       search in zero page for @xyz
+;; ;xyz       search globally for @xyz
+;; :xyz       search globally for @xyz
+;; ,@xyz      search globally for @xyz
+
+;; .abc/xyz   search in zero page for &xyz within @abc
+;; ;abc/xyz   search globally for &xyz within @abc
+;; :abc/xyz   search globally for &xyz within @abc
+;; ,@bac/xyz  search globally for @xyz
+
+;; ,&xyz      search within current label for &xyz
+;; ;&xyz      search within current label for &xyz
 
 
 ;; provide mode
