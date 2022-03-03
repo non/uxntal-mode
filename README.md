@@ -34,6 +34,16 @@ Future features:
  * ASCII conversions
  * Input string literal as bytes
 
+## settings
+
+By default `tal-mode` is strict about comment highlighting. This means
+there are a few valid comments such as `( )` which will not highlight
+correctly.
+
+If you would prefer to have more permissive comment highlighting which
+allows all valid comments (but may also accept some invalid comments)
+set `tal-mode:strict-comments` to `nil`.
+
 ## screenshot
 
 ![tal-mode screenshot](http://plastic-idolatry.com/erik/nxu/tal-mode1.png)
