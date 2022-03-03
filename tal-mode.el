@@ -131,35 +131,21 @@
    )
   "Level one font lock.")
 
-;; set up syntax table
+;; create the syntax table which powers some highlighting decisions.
 ;;
-;; TODO: figure out how to more correctly handle comments
+;; since it is not possible to exactly encode uxntal's rules for
+;; comments, we have to choose between strict and non-strict
+;; highlighting.
 ;;
-;; right now, we'll highlight (foo) as a comment (which is wrong).
+;; when strict, valid comments such as "( )" or "(<newline>)"
+;; will be incorrectly rejected.
 ;;
-;; the commented out definitions require "( " and " )" for comments,
-;; which would prevent issues like that.
-;;
-;; however, they would introduce two new problems:
-;;
-;;   1. tabs and especially newlines are also valid; it's not clear
-;;      newlines can be used as a "second character" in syntax.
-;;
-;;   2. things like "( )" are legal comments but aren't handled
-;;      correctly, since emacs thinks we want "(" and ")" to each have
-;;      their own space character (rather than sharing the one).
-;;
-;; it's not clear to me that emacs syntax tables can precisely match
-;; what we need. we could change how the mode works to tokenize the
-;; entire file and _then_ highlight it but for now that's too heavy of
-;; a lift.
-;;
-;; given all that tal-mode prefers to ensure all actual comments show
-;; up correctly rather than "catching" situations where comments
-;; aren't correctly padded. sorry! :/
-(defvar tal-mode-syntax-table
+;; when non-strict, invalid comments such as "(hi )" or "( bye)"
+;; will be incorrectly accepted.
+(defun tal-create-syntax-table (strict)
   (let ((table (make-syntax-table))
         (c 0))
+    ;; treat characters <= space as whitespace
     (while (< c ?!)
       (modify-syntax-entry c " " table)
       (setq c (1+ c)))
@@ -167,18 +153,36 @@
     (while (< c 127)
       (modify-syntax-entry c "w" table)
       (setq c (1+ c)))
-    ;;;; definitions to make commented regions stricter
-    ;; (modify-syntax-entry ?\( "()1nb" table)
-    ;; (modify-syntax-entry ?\) ")(4nb" table)
-    ;; (modify-syntax-entry ?\s " 123" table)
-    (modify-syntax-entry ?\( "<)nb" table)
-    (modify-syntax-entry ?\) ">(nb" table)
-    ;; delimiters, ignored by uxnasm
+    ;; when strict, we require ( and ) to have whitespace padding.
+    ;; this is typically ok but fails on things like "( )" which
+    ;; should be valid comments but would not highlight correctly.
+    (if strict
+      (progn
+        (modify-syntax-entry ?\( "()1nb" table)
+        (modify-syntax-entry ?\) ")(4nb" table)
+        (modify-syntax-entry ?\s " 123" table)
+        (modify-syntax-entry ?\t " 123" table)
+        (modify-syntax-entry ?\n " 123" table))
+      (progn
+        (modify-syntax-entry ?\( "<)nb" table)
+        (modify-syntax-entry ?\) ">(nb" table)))
+    ;; generic delimiters, ignored by uxnasm
     (modify-syntax-entry ?\[ "(]" table)
     (modify-syntax-entry ?\] ")[" table)
     (modify-syntax-entry ?\{ "(}" table)
     (modify-syntax-entry ?\} "){" table)
-    table)
+    ;; return the syntax table
+    table))
+
+(defcustom tal-mode:strict-comments t
+  "When non-nil, will parse comments strictly, ensuring invalid comments are rejected.
+Otherwise, will parse comments permissively, ensuring valid comments are accepted."
+  :type 'boolean
+  :safe #'booleanp
+  :group 'tal)
+
+(defvar tal-mode-syntax-table
+  (tal-create-syntax-table tal-mode:strict-comments)
   "Syntax table in use in `tal-mode' buffers.")
 
 ;; set up mode
@@ -192,6 +196,9 @@
   (setq major-mode 'tal-mode)
   (make-local-variable 'comment-start)
   (make-local-variable 'comment-end)
+  (setq imenu-generic-expression
+        (list (list nil tal-mode-label-define-re 1)
+              (list nil tal-mode-macro-define-re 1)))
   (setq comment-start "( ")
   (setq comment-end " )")
   (setq mode-name "Tal")
@@ -204,6 +211,11 @@
            (out (concat (file-name-sans-extension in) ".rom")))
         (set (make-local-variable 'compile-command)
              (concat "uxnasm " in " " out)))))
+
+(add-hook 'tal-mode-hook
+  (lambda ()
+    (setq tal-mode-syntax-table (tal-create-syntax-table tal-mode:strict-comments))
+    (set-syntax-table tal-mode-syntax-table)))
 
 ;; regex to strip prefix from numbers like #99 |0100 $8
 (defconst extract-number-re
@@ -238,13 +250,12 @@
     (puthash "ROT" (vector "Rotate" '(("a" "b" "c") . ("b" "c" "a")) nil "rotate the top three values to the left") m)
     (puthash "EQU" (vector "Equal" '(("a" "b") . ("bool^")) nil "push 01 if a == b; push 00 otherwise") m)
     (puthash "NEQ" (vector "Not Equal" '(("a" "b") . ("bool^")) nil "push 01 if a != b; push 00 otherwise") m)
+    (puthash "LTH" (vector "Less Than" '(("a" "b") . ("bool^")) nil "push 01 if a < b; push 00 otherwise") m)
     (puthash "GTH" (vector "Greater Than" '(("a" "b") . ("bool^")) nil "push 01 if a > b; push 00 otherwise") m)
     (puthash "JMP" (vector "Jump" '(("addr") . ()) nil "modify the pc using addr") m)
     (puthash "JCN" (vector "Jump Conditional" '(("bool^" "addr") . ()) nil "if bool != 00, modify the pc using addr") m)
     (puthash "JSR" (vector "Jump Stash Return" '(("addr") . ()) '(() . ("pc")) "store pc onto return stack; modify pc using addr") m)
     (puthash "STH" (vector "Stash" '(("a") . ()) '(() . ("a")) "move the top of the stack to the return stack") m)
-    (puthash "LTH" (vector "Less Than" '(("a" "b") . ("bool^")) nil "push 01 if a < b; push 00 otherwise") m)
-
     (puthash "LDZ" (vector "Load Zero-Page" '(("addr^") . ("val")) nil "load value from first 256 bytes of memory onto the stack") m)
     (puthash "STZ" (vector "Store Zero-Page" '(("val" "addr^") . ()) nil "write top of stack into the first 256 bytes of memory") m)
     (puthash "LDR" (vector "Load Relative" '(("addr^") . ("val")) nil "load relative address onto the stack") m)
