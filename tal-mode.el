@@ -271,7 +271,7 @@ Otherwise, will parse comments permissively, ensuring valid comments are accepte
     (puthash "AND" (vector "And" '(("a" "b") . ("a&b")) nil "bitwise-and (a & b)") m)
     (puthash "ORA" (vector "Or" '(("a" "b") . ("a|b")) nil "bitwise-or (a | b)") m)
     (puthash "EOR" (vector "Exclusive Or" '(("a" "b") . ("a^b")) nil "bitwise-xor (a ^ b)") m)
-    (puthash "SFT" (vector "Shift" '(("a" "b^") . ("c")) nil "bitshift left (b >> 4) then right (b & 0xf)") m)
+    (puthash "SFT" (vector "Shift" '(("a" "b^") . ("c")) nil "bitshift right (b & 0xf) then left (b >> 4)") m)
     m))
 
 (defun tal-format-stack (pair glyph)
