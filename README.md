@@ -43,10 +43,10 @@ incorrectly.
 
 If you would prefer to have stricter comment highlighting which forbids all
 invalid comments (but may also forbid valid comments like `( )`) set
-`tal-mode:strict-comments` to `t`.
+`tal-mode-strict-comments` to `t`.
 
-Unfortunately both modes will fail on words like `worst-case-(` due to
-limitations in how Emacs handles multiline comments.
+Unfortunately both modes fail on words like `worst-case-(` due to limitations
+in how Emacs handles multiline comments.
 
 ## screenshot
 
