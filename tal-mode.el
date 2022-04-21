@@ -9,6 +9,9 @@
 
 ;;; Commentary:
 
+;; This major mode supports writing the Uxntal assmembly langauge as documented
+;; here: https://wiki.xxiivv.com/site/uxntal.html
+
 ;; Prior art: https://github.com/xaderfos/uxntal-mode
 
 ;;; Code:
@@ -151,7 +154,7 @@
     (while (< c 127)
       (modify-syntax-entry c "w" table)
       (setq c (1+ c)))
-    ;; when strict, we require ( and ) to have whitespace padding.
+    ;; when strict, we require '(' and ')' to have whitespace padding.
     ;; this is typically ok but fails on things like "( )" which
     ;; should be valid comments but would not highlight correctly.
     (if strict
@@ -173,7 +176,7 @@
     table))
 
 (defcustom tal-mode-strict-comments nil
-  "When non-nil, will parse comments strictly, ensuring invalid comments are rejected. Otherwise, will parse comments permissively, ensuring valid comments are accepted."
+  "When non-nil, will parse comments strictly, ensuring invalid comments are rejected. Otherwise, comments are parsed permissively, ensuring valid comments are accepted."
   :type 'boolean
   :safe #'booleanp
   :group 'tal)
@@ -253,7 +256,7 @@
     m))
 
 (defun tal-format-stack (pair glyph)
-  "Format the given stack PAIR as stack effects using GLYPH."
+  "Format the given stack PAIR as stack effects using GLYPH. Stacks are represented as a pair of lists for input and output parameters respectively. We apply GLYPH to any parameter that doesn't already have a suffix denoting its type ('^' for 8-bit values, '*' for 16-bit values)."
   (let* ((decorate (lambda (name) (if (or (string-suffix-p "^" name)
                                           (string-suffix-p "*" name))
                                       name
@@ -262,14 +265,14 @@
          (outs (mapconcat decorate (cdr pair) " ")))
     (format "%s -> %s" ins outs)))
 
-(defun tal-setup-keep (st)
-  "Translate the ST state description for keep mode."
-  (let ((in (car st))
-        (out (cdr st)))
+(defun tal-setup-keep (pair)
+  "Translate the given stack PAIR for keep mode. This involves prepending the input parameters (i.e. the first list) to the output parameters (the second list)."
+  (let ((in (car pair))
+        (out (cdr pair)))
     (cons in (append in out))))
 
 (defun tal-decode-instruction (inst)
-  "Decode the meaning of the INST instruction."
+  "Decode the meaning of the INST instruction. Instructions are always three capital letters followed by a suffix involving '2', 'k', and/or 'r'."
   (let ((m (string-match tal-mode-inst-re inst)))
     (if (eq m nil)
         (message "`%s' is not an instruction" inst)
@@ -317,7 +320,7 @@
      ((string-match tal-mode-number-re w) (message "%s is a number (%d)" w (funcall dec1)))
      ((string-match tal-mode-raw-number-re w) (message "%s is a raw number (%d)" w (funcall dec)))
      ((string-match tal-mode-inst-re w) (tal-decode-instruction w))
-     (t (message "Unknown word: %s" w)))))
+     (t (message "Unknown word: `%s'" w)))))
 
 ;; provide mode
 (provide 'tal-mode)

@@ -23,26 +23,30 @@ Currently-supported features:
 
  * Syntax highlighting
  * Invoking `uxnasm` via `M-x compile`
- * Interpreting hex numbers as decimal (`tal-decimal-value`, `C-c d`)
- * Decoding Uxntal instructions (`tal-decode-instruction`, `C-c i`)
+ * Explaining Uxntal words (`tal-explain-word`)
+   + Decodes instructions, showing their stack effects
+   + Shows decimal values of numeric constants
+   + Explains syntactic category (e.g. "sublabel definition")
 
 Future features:
 
  * Support for goto-definition (`M-.`)
- * Support more general "what is this word?"
  * Decimal -> hexadecimal conversions
  * ASCII conversions
  * Input string literal as bytes
 
 ## settings
 
-By default `tal-mode` is strict about comment highlighting. This means
-there are a few valid comments such as `( )` which will not highlight
-correctly.
+By default `tal-mode` is lax about comment highlighting. This means that some
+invalid comments such as `(this)` or `(that )` or `( these)` will be highlighted
+incorrectly.
 
-If you would prefer to have more permissive comment highlighting which
-allows all valid comments (but may also accept some invalid comments)
-set `tal-mode:strict-comments` to `nil`.
+If you would prefer to have stricter comment highlighting which forbids all
+invalid comments (but may also forbid valid comments like `( )`) set
+`tal-mode:strict-comments` to `t`.
+
+Unfortunately both modes will fail on words like `worst-case-(` due to
+limitations in how Emacs handles multiline comments.
 
 ## screenshot
 
