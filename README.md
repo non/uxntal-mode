@@ -27,9 +27,11 @@ Currently-supported features:
    + Decodes instructions, showing their stack effects
    + Shows decimal values of numeric constants
    + Explains syntactic category (e.g. "sublabel definition")
+ * Imenu support for macro definitions and labels
 
 Future features:
 
+ * Interactive evaluation
  * Support for goto-definition (`M-.`)
  * Decimal -> hexadecimal conversions
  * ASCII conversions
