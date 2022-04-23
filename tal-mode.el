@@ -6,13 +6,12 @@
 ;; Homepage: https://github.com/non/tal-mode
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "27.1"))
+;; License: Apache License Version 2.0
 
 ;;; Commentary:
 
 ;; This major mode supports writing the Uxntal assmembly langauge as documented
-;; here: https://wiki.xxiivv.com/site/uxntal.html
-
-;; Prior art: https://github.com/xaderfos/uxntal-mode
+;; at https://wiki.xxiivv.com/site/uxntal.html.
 
 ;;; Code:
 
@@ -322,7 +321,6 @@
      ((string-match tal-mode-inst-re w) (tal-decode-instruction w))
      (t (message "Unknown word: `%s'" w)))))
 
-;; provide mode
 (provide 'tal-mode)
 
 ;;; tal-mode.el ends here

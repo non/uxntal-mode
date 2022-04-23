@@ -54,6 +54,14 @@ in how Emacs handles multiline comments.
 
 ![tal-mode screenshot](http://plastic-idolatry.com/erik/nxu/tal-mode1.png)
 
+## attribution
+
+Copyright d_m, 2022.
+
+This code is available to you under the
+[Apache License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt).
+See COPYING for more details.
+
 ## see also
 
  * https://github.com/xaderfos/uxntal-mode
