@@ -23,6 +23,7 @@
 (defvar tal-mode-hook nil)
 
 ;; open .tal files with this mode
+;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.tal\\'" . tal-mode))
 
 ;; macro definitions like %MOD
@@ -185,6 +186,7 @@
   "Syntax table in use in `tal-mode' buffers.")
 
 ;; set up mode
+;;;###autoload
 (defun tal-mode ()
   "Major mode for editing Tal files."
   (interactive)
