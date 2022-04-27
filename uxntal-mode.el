@@ -224,23 +224,26 @@
 ;; This table powers uxntal-decode-instruction.
 (defconst uxntal-mode-instructions
   (let ((m (make-hash-table :test 'equal :size 32)))
+    ;; stack opcodes
     (puthash "BRK" (vector "Break" '(() . ()) nil "halt the program") m)
     (puthash "LIT" (vector "Literal" '(() . ("a")) nil "push the next value onto the stack") m)
     (puthash "INC" (vector "Increment" '(("a") . ("b")) nil "adds one to the top of the stack") m)
     (puthash "POP" (vector "Pop" '(("a") . ()) nil "remove the top of the stack") m)
-    (puthash "DUP" (vector "Duplicate" '(("a") . ("a" "a")) nil "duplicate the top of the stack") m)
     (puthash "NIP" (vector "Nip" '(("a" "b") . ("b")) nil "remove the second value (a)") m)
     (puthash "SWP" (vector "Swap" '(("a" "b") . ("b" "a")) nil "swap the top two stack values") m)
-    (puthash "OVR" (vector "Over" '(("a" "b") . ("a" "b" "a")) nil "duplicate the second value (a) to the top of the stack") m)
     (puthash "ROT" (vector "Rotate" '(("a" "b" "c") . ("b" "c" "a")) nil "rotate the top three values to the left") m)
+    (puthash "DUP" (vector "Duplicate" '(("a") . ("a" "a")) nil "duplicate the top of the stack") m)
+    (puthash "OVR" (vector "Over" '(("a" "b") . ("a" "b" "a")) nil "duplicate the second value (a) to the top of the stack") m)
+    ;; logic opcodes
     (puthash "EQU" (vector "Equal" '(("a" "b") . ("bool^")) nil "push 01 if a == b; push 00 otherwise") m)
     (puthash "NEQ" (vector "Not Equal" '(("a" "b") . ("bool^")) nil "push 01 if a != b; push 00 otherwise") m)
-    (puthash "LTH" (vector "Less Than" '(("a" "b") . ("bool^")) nil "push 01 if a < b; push 00 otherwise") m)
     (puthash "GTH" (vector "Greater Than" '(("a" "b") . ("bool^")) nil "push 01 if a > b; push 00 otherwise") m)
+    (puthash "LTH" (vector "Less Than" '(("a" "b") . ("bool^")) nil "push 01 if a < b; push 00 otherwise") m)
     (puthash "JMP" (vector "Jump" '(("addr") . ()) nil "modify the pc using addr") m)
     (puthash "JCN" (vector "Jump Conditional" '(("bool^" "addr") . ()) nil "if bool != 00, modify the pc using addr") m)
     (puthash "JSR" (vector "Jump Stash Return" '(("addr") . ()) '(() . ("pc")) "store pc onto return stack; modify pc using addr") m)
     (puthash "STH" (vector "Stash" '(("a") . ()) '(() . ("a")) "move the top of the stack to the return stack") m)
+    ;; memory opcodes
     (puthash "LDZ" (vector "Load Zero-Page" '(("addr^") . ("val")) nil "load value from first 256 bytes of memory onto the stack") m)
     (puthash "STZ" (vector "Store Zero-Page" '(("val" "addr^") . ()) nil "write top of stack into the first 256 bytes of memory") m)
     (puthash "LDR" (vector "Load Relative" '(("addr^") . ("val")) nil "load relative address onto the stack") m)
@@ -249,6 +252,7 @@
     (puthash "STA" (vector "Store Absolute" '(("val" "addr*") . ()) nil "write top of stack to absolute address") m)
     (puthash "DEI" (vector "Device In" '(("addr^") . ("val")) nil "load from the given device onto the stack") m)
     (puthash "DEO" (vector "Device Out" '(("val" "addr^") . ()) nil "write top of stack to the given device") m)
+    ;; arithmetic opcodes
     (puthash "ADD" (vector "Add" '(("a" "b") . ("a+b")) nil "addition (a + b)") m)
     (puthash "SUB" (vector "Subtract" '(("a" "b") . ("a-b")) nil "subtraction (a - b)") m)
     (puthash "MUL" (vector "Multiply" '(("a" "b") . ("a*b")) nil "multiplication (a * b)") m)
