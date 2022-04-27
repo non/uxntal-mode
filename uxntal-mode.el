@@ -1,9 +1,9 @@
-;;; tal-mode.el --- Major mode for Uxntal assembly   -*- lexical-binding: t; -*-
+;;; uxntal-mode.el --- Major mode for Uxntal assembly   -*- lexical-binding: t; -*-
 
 ;; Copyright (c) 2022 d_m
 
 ;; Author: d_m <d_m@plastic-idolatry.com>
-;; Homepage: https://github.com/non/tal-mode
+;; Homepage: https://github.com/non/uxntal-mode
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "27.1"))
 ;; License: Apache License Version 2.0
@@ -19,39 +19,36 @@
 (require 'rx)
 (require 'seq)
 
-;; set up a mode hook
-(defvar tal-mode-hook nil)
-
 ;; open .tal files with this mode
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.tal\\'" . tal-mode))
+(add-to-list 'auto-mode-alist '("\\.tal\\'" . uxntal-mode))
 
 ;; macro definitions like %MOD
-(defconst tal-mode-macro-define-re
+(defconst uxntal-mode-macro-define-re
   (rx (group bow "%" (1+ (not (in space))) eow)))
 
 ;; includes like ~util.tal
-(defconst tal-mode-include-re
+(defconst uxntal-mode-include-re
   (rx (group bow "~" (1+ (not (in space))) eow)))
 
 ;; labels like @foo
-(defconst tal-mode-label-define-re
+(defconst uxntal-mode-label-define-re
   (rx (group bow "@" (1+ (not (in space))) eow)))
 
 ;; subabels like &bar
-(defconst tal-mode-sublabel-define-re
+(defconst uxntal-mode-sublabel-define-re
   (rx (group bow "&" (1+ (not (in space))) eow)))
 
 ;; raw characters like 'a or '[
-(defconst tal-mode-raw-char-re
+(defconst uxntal-mode-raw-char-re
   (rx (group bow "'" (in "!-~") eow)))
 
 ;; raw strings like "foo or "a-b-c-d-e
-(defconst tal-mode-raw-str-re
+(defconst uxntal-mode-raw-str-re
   (rx (group bow "\"" (1+ (in "!-~")) eow)))
 
 ;; absolute pads like |a0 or |0100
-(defconst tal-mode-absolute-pad-re
+(defconst uxntal-mode-absolute-pad-re
   (rx (group
        bow "|"
        (repeat 2 (in "0-9a-f"))
@@ -59,21 +56,21 @@
        eow)))
 
 ;; pads like $1 $1f $300 $1000
-(defconst tal-mode-relative-pad-re
+(defconst uxntal-mode-relative-pad-re
   (rx (group bow "$" (repeat 1 4 (in "0-9a-f")) eow)))
 
 ;; addresses such as .foo ,bar ;baz :qux
-(defconst tal-mode-addr-zeropage-re
+(defconst uxntal-mode-addr-zeropage-re
   (rx (group bow "." (1+ (not (in space))) eow)))
-(defconst tal-mode-addr-relative-re
+(defconst uxntal-mode-addr-relative-re
   (rx (group bow "," (1+ (not (in space))) eow)))
-(defconst tal-mode-addr-absolute-re
+(defconst uxntal-mode-addr-absolute-re
   (rx (group bow ";" (1+ (not (in space))) eow)))
-(defconst tal-mode-addr-raw-re
+(defconst uxntal-mode-addr-raw-re
   (rx (group bow ":" (1+ (not (in space))) eow)))
 
 ;; literal numbers like #ff or #abcd
-(defconst tal-mode-number-re
+(defconst uxntal-mode-number-re
   (rx (group
        bow "#"
        (repeat 2 (in "0-9a-f"))
@@ -81,7 +78,7 @@
        eow)))
 
 ;; raw numbers like ff or abcd
-(defconst tal-mode-raw-number-re
+(defconst uxntal-mode-raw-number-re
   (rx (group
        bow
        (repeat 2 (in "0-9a-f"))
@@ -89,7 +86,7 @@
        eow)))
 
 ;; tal instructions like ADD or JMP2r
-(defconst tal-mode-inst-re
+(defconst uxntal-mode-inst-re
   (rx (group bow
        (or "BRK"
            (group "LIT" (\? "2") (\? "r"))
@@ -104,31 +101,31 @@
        eow)))
 
 ;; all previous rules joined together into a list
-(defconst tal-font-lock-keywords-1
+(defconst uxntal-font-lock-keywords-1
   (list
    ;; macros (%)
-   (list tal-mode-macro-define-re 1 font-lock-keyword-face)
+   (list uxntal-mode-macro-define-re 1 font-lock-keyword-face)
    ;; addresses (. , ; :)
-   (list tal-mode-addr-zeropage-re 1 font-lock-variable-name-face)
-   (list tal-mode-addr-relative-re 1 font-lock-variable-name-face)
-   (list tal-mode-addr-absolute-re 1 font-lock-variable-name-face)
-   (list tal-mode-addr-raw-re 1 font-lock-variable-name-face)
+   (list uxntal-mode-addr-zeropage-re 1 font-lock-variable-name-face)
+   (list uxntal-mode-addr-relative-re 1 font-lock-variable-name-face)
+   (list uxntal-mode-addr-absolute-re 1 font-lock-variable-name-face)
+   (list uxntal-mode-addr-raw-re 1 font-lock-variable-name-face)
    ;; labels (@ &)
-   (list tal-mode-label-define-re 1 font-lock-function-name-face)
-   (list tal-mode-sublabel-define-re 1 font-lock-function-name-face)
+   (list uxntal-mode-label-define-re 1 font-lock-function-name-face)
+   (list uxntal-mode-sublabel-define-re 1 font-lock-function-name-face)
    ;; padding (| $)
-   (list tal-mode-absolute-pad-re 1 font-lock-preprocessor-face)
-   (list tal-mode-relative-pad-re 1 font-lock-preprocessor-face)
+   (list uxntal-mode-absolute-pad-re 1 font-lock-preprocessor-face)
+   (list uxntal-mode-relative-pad-re 1 font-lock-preprocessor-face)
    ;; includes (~)
-   (list tal-mode-include-re 1 font-lock-preprocessor-face)
+   (list uxntal-mode-include-re 1 font-lock-preprocessor-face)
    ;; instructions
-   (list tal-mode-inst-re 1 font-lock-builtin-face)
+   (list uxntal-mode-inst-re 1 font-lock-builtin-face)
    ;; constant numbers (#)
-   (list tal-mode-number-re 1 font-lock-constant-face)
+   (list uxntal-mode-number-re 1 font-lock-constant-face)
    ;; raw values (' ")
-   (list tal-mode-raw-number-re 1 font-lock-string-face)
-   (list tal-mode-raw-char-re 1 font-lock-string-face)
-   (list tal-mode-raw-str-re 1 font-lock-string-face))
+   (list uxntal-mode-raw-number-re 1 font-lock-string-face)
+   (list uxntal-mode-raw-char-re 1 font-lock-string-face)
+   (list uxntal-mode-raw-str-re 1 font-lock-string-face))
   "Level one font lock.")
 
 ;; create the syntax table which powers some highlighting decisions.
@@ -142,7 +139,7 @@
 ;;
 ;; when non-strict, invalid comments such as "(hi )" or "( bye)"
 ;; will be incorrectly accepted.
-(defun tal-create-syntax-table (strict)
+(defun uxntal-create-syntax-table (strict)
   "Create a syntax table. The STRICT parameter determines whether to use strict or lax parsing for comments."
   (let ((table (make-syntax-table))
         (c 0))
@@ -175,51 +172,57 @@
     ;; return the syntax table
     table))
 
-(defcustom tal-mode-strict-comments nil
+(defcustom uxntal-mode-strict-comments nil
   "When non-nil, will parse comments strictly, ensuring invalid comments are rejected. Otherwise, comments are parsed permissively, ensuring valid comments are accepted."
   :type 'boolean
   :safe #'booleanp
-  :group 'tal)
+  :group 'uxntal)
 
-(defvar tal-mode-syntax-table
-  (tal-create-syntax-table tal-mode-strict-comments)
-  "Syntax table in use in `tal-mode' buffers.")
+(defcustom uxntal-uxnasm-path "uxnasm"
+  "Path to run uxnasm assembler command."
+  :type 'string
+  :safe #'stringp
+  :group 'uxntal)
 
-;; set up mode
-;;;###autoload
-(defun tal-mode ()
-  "Major mode for editing Tal files."
+(defvar uxntal-mode-syntax-table
+  (uxntal-create-syntax-table uxntal-mode-strict-comments)
+  "Syntax table in use in `uxntal-mode' buffers.")
+
+(defconst uxntal-imenu-generic-expression
+  (list (list nil uxntal-mode-label-define-re 1)
+        (list nil uxntal-mode-macro-define-re 1))
+  "Expressions for navigating Uxntal with imenu.")
+
+(defun uxntal-indent-line ()
+  "Indent line by inserting a tab character."
   (interactive)
-  (kill-all-local-variables)
-  (set-syntax-table tal-mode-syntax-table)
-  (set (make-local-variable 'font-lock-defaults) '(tal-font-lock-keywords-1 nil nil))
-  (setq major-mode 'tal-mode)
-  (make-local-variable 'comment-start)
-  (make-local-variable 'comment-end)
-  (setq imenu-generic-expression
-        (list (list nil tal-mode-label-define-re 1)
-              (list nil tal-mode-macro-define-re 1)))
-  (setq comment-start "( ")
-  (setq comment-end " )")
-  (setq mode-name "Tal")
-  (run-hooks 'tal-mode-hook))
+  (insert "\t"))
+
+;;;###autoload
+(define-derived-mode uxntal-mode prog-mode "Uxntal"
+  "Major mode for editing Uxntal files."
+  (set-syntax-table (uxntal-create-syntax-table uxntal-mode-strict-comments))
+  (setq font-lock-defaults '(uxntal-font-lock-keywords-1 nil nil)
+        comment-start "( "
+        comment-end " )"
+        comment-quote-nested nil
+        indent-line-function #'uxntal-indent-line
+        imenu-generic-expression uxntal-imenu-generic-expression))
+
+(defun uxntal-assemble-buffer ()
+  "Compile the current buffer to a ROM using uxntal."
+  (interactive)
+  (let* ((in (file-relative-name buffer-file-name))
+         (out (concat (file-name-sans-extension in) ".rom")))
+    (set (make-local-variable 'compile-command)
+         (concat uxntal-uxnasm-path " " in " " out))))
 
 ;; set up M-x compile to call uxnasm
-(add-hook 'tal-mode-hook
-  (lambda ()
-    (let* ((in (file-relative-name buffer-file-name))
-           (out (concat (file-name-sans-extension in) ".rom")))
-        (set (make-local-variable 'compile-command)
-             (concat "uxnasm " in " " out)))))
-
-(add-hook 'tal-mode-hook
-  (lambda ()
-    (setq tal-mode-syntax-table (tal-create-syntax-table tal-mode-strict-comments))
-    (set-syntax-table tal-mode-syntax-table)))
+(add-hook 'uxntal-mode-hook #'uxntal-assemble-buffer)
 
 ;; Constructs a table of metadata about every instruction.
-;; This table powers tal-decode-instruction.
-(defconst tal-mode-instructions
+;; This table powers uxntal-decode-instruction.
+(defconst uxntal-mode-instructions
   (let ((m (make-hash-table :test 'equal :size 32)))
     (puthash "BRK" (vector "Break" '(() . ()) nil "halt the program") m)
     (puthash "LIT" (vector "Literal" '(() . ("a")) nil "push the next value onto the stack") m)
@@ -256,7 +259,7 @@
     (puthash "SFT" (vector "Shift" '(("a" "b^") . ("c")) nil "bitshift right (b & 0xf) then left (b >> 4)") m)
     m))
 
-(defun tal-format-stack (pair glyph)
+(defun uxntal-format-stack (pair glyph)
   "Format the given stack PAIR as stack effects using GLYPH. Stacks are represented as a pair of lists for input and output parameters respectively. We apply GLYPH to any parameter that doesn't already have a suffix denoting its type ('^' for 8-bit values, '*' for 16-bit values)."
   (let* ((decorate (lambda (name) (if (or (string-suffix-p "^" name)
                                           (string-suffix-p "*" name))
@@ -266,19 +269,19 @@
          (outs (mapconcat decorate (cdr pair) " ")))
     (format "%s -> %s" ins outs)))
 
-(defun tal-setup-keep (pair)
+(defun uxntal-setup-keep (pair)
   "Translate the given stack PAIR for keep mode. This involves prepending the input parameters (i.e. the first list) to the output parameters (the second list)."
   (let ((in (car pair))
         (out (cdr pair)))
     (cons in (append in out))))
 
-(defun tal-decode-instruction (inst)
+(defun uxntal-decode-instruction (inst)
   "Decode the meaning of the INST instruction. Instructions are always three capital letters followed by a suffix involving '2', 'k', and/or 'r'."
-  (let ((m (string-match tal-mode-inst-re inst)))
-    (if (eq m nil)
+  (let ((m (string-match uxntal-mode-inst-re inst)))
+    (if (not m)
         (message "`%s' is not an instruction" inst)
       (let* ((base (substring inst 0 3))
-             (inst-info (gethash base tal-mode-instructions))
+             (inst-info (gethash base uxntal-mode-instructions))
              (name (aref inst-info 0))
              (s0 (aref inst-info 1))
              (s1 (aref inst-info 2))
@@ -288,41 +291,41 @@
              ;; k -> keep inputs on stack
              ;; r -> swap working stack (ws) and return stack (rs)
              (wsx (if (seq-contains-p inst ?r) s1 s0))
-             (ws (if (seq-contains-p inst ?k) (tal-setup-keep wsx) wsx))
+             (ws (if (seq-contains-p inst ?k) (uxntal-setup-keep wsx) wsx))
              (rsx (if (seq-contains-p inst ?r) s0 s1))
-             (rs (if (seq-contains-p inst ?k) (tal-setup-keep rsx) rsx))
+             (rs (if (seq-contains-p inst ?k) (uxntal-setup-keep rsx) rsx))
              (glyph (if (seq-contains-p inst ?2) "*" "^"))
-             (wss (if ws (concat "(" (tal-format-stack ws glyph) ") ") ""))
-             (rss (if rs (concat "{" (tal-format-stack rs glyph) "} ") "")))
+             (wss (if ws (concat "(" (uxntal-format-stack ws glyph) ") ") ""))
+             (rss (if rs (concat "{" (uxntal-format-stack rs glyph) "} ") "")))
         ;; create full string representation of stacks,
         ;; with delimiters and whitespace
         (message "%s %s%s%s: %s" inst wss rss name doc)))))
 
-(defun tal-explain-word ()
+(defun uxntal-explain-word ()
   "Explain the given word's meaning in Uxntal. Depdending on the word, this may decode an instruction, display a numeric constant, or describe the syntactic category for the given word."
   (interactive)
   (let* ((w (current-word t t))
          (dec (lambda () (string-to-number w 16)))
          (dec1 (lambda () (string-to-number (substring w 1) 16))))
     (cond
-     ((eq w nil) (message "No word selected"))
-     ((string-match tal-mode-macro-define-re w) (message "%s is a macro definition" w))
-     ((string-match tal-mode-include-re w) (message "%s is an include" w))
-     ((string-match tal-mode-label-define-re w) (message "%s is a label definition" w))
-     ((string-match tal-mode-sublabel-define-re w) (message "%s is a sublabel definition" w))
-     ((string-match tal-mode-raw-char-re w) (message "%s is a raw char" w))
-     ((string-match tal-mode-raw-str-re w) (message "%s is a raw string" w))
-     ((string-match tal-mode-absolute-pad-re w) (message "%s is an absolute pad (%d)" w (funcall dec1)))
-     ((string-match tal-mode-relative-pad-re w) (message "%s is a relative pad (+%d)" w (funcall dec1)))
-     ((string-match tal-mode-addr-zeropage-re w) (message "%s is a zero-page address" w))
-     ((string-match tal-mode-addr-relative-re w) (message "%s is a relative address" w))
-     ((string-match tal-mode-addr-absolute-re w) (message "%s is an absolute address" w))
-     ((string-match tal-mode-addr-raw-re w) (message "%s is a raw address" w))
-     ((string-match tal-mode-number-re w) (message "%s is a number (%d)" w (funcall dec1)))
-     ((string-match tal-mode-raw-number-re w) (message "%s is a raw number (%d)" w (funcall dec)))
-     ((string-match tal-mode-inst-re w) (tal-decode-instruction w))
+     ((not w) (message "No word selected"))
+     ((string-match uxntal-mode-macro-define-re w) (message "%s is a macro definition" w))
+     ((string-match uxntal-mode-include-re w) (message "%s is an include" w))
+     ((string-match uxntal-mode-label-define-re w) (message "%s is a label definition" w))
+     ((string-match uxntal-mode-sublabel-define-re w) (message "%s is a sublabel definition" w))
+     ((string-match uxntal-mode-raw-char-re w) (message "%s is a raw char" w))
+     ((string-match uxntal-mode-raw-str-re w) (message "%s is a raw string" w))
+     ((string-match uxntal-mode-absolute-pad-re w) (message "%s is an absolute pad (%d)" w (funcall dec1)))
+     ((string-match uxntal-mode-relative-pad-re w) (message "%s is a relative pad (+%d)" w (funcall dec1)))
+     ((string-match uxntal-mode-addr-zeropage-re w) (message "%s is a zero-page address" w))
+     ((string-match uxntal-mode-addr-relative-re w) (message "%s is a relative address" w))
+     ((string-match uxntal-mode-addr-absolute-re w) (message "%s is an absolute address" w))
+     ((string-match uxntal-mode-addr-raw-re w) (message "%s is a raw address" w))
+     ((string-match uxntal-mode-number-re w) (message "%s is a number (%d)" w (funcall dec1)))
+     ((string-match uxntal-mode-raw-number-re w) (message "%s is a raw number (%d)" w (funcall dec)))
+     ((string-match uxntal-mode-inst-re w) (uxntal-decode-instruction w))
      (t (message "Unknown word: `%s'" w)))))
 
-(provide 'tal-mode)
+(provide 'uxntal-mode)
 
-;;; tal-mode.el ends here
+;;; uxntal-mode.el ends here
