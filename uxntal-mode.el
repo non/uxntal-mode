@@ -4,7 +4,7 @@
 
 ;; Author: d_m <d_m@plastic-idolatry.com>
 ;; Homepage: https://github.com/non/uxntal-mode
-;; Version: 0.1
+;; Version: 0.2
 ;; Package-Requires: ((emacs "27.1"))
 ;; License: Apache License 2.0
 
