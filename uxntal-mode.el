@@ -196,29 +196,29 @@
 (defun uxntal-indent-line ()
   "Indent line by inserting a tab character."
   (interactive)
-  (insert "\t"))
+  (if indent-tabs-mode
+      (insert "\t")
+    (insert (make-string tab-width ?\s))))
+
+;; set M-x compile to call uxnasm
+(defun uxntal-setup-compile-command ()
+  "Set the current buffer to compile to a ROM using uxnasm."
+  (let* ((in (file-relative-name buffer-file-name))
+         (out (concat (file-name-sans-extension in) ".rom")))
+    (set (make-local-variable 'compile-command)
+         (concat uxntal-uxnasm-path " " in " " out))))
 
 ;;;###autoload
 (define-derived-mode uxntal-mode prog-mode "Uxntal"
   "Major mode for editing Uxntal files."
   (set-syntax-table (uxntal-create-syntax-table uxntal-mode-strict-comments))
+  (uxntal-setup-compile-command)
   (setq font-lock-defaults '(uxntal-font-lock-keywords-1 nil nil)
         comment-start "( "
         comment-end " )"
         comment-quote-nested nil
         indent-line-function #'uxntal-indent-line
         imenu-generic-expression uxntal-imenu-generic-expression))
-
-(defun uxntal-assemble-buffer ()
-  "Compile the current buffer to a ROM using uxntal."
-  (interactive)
-  (let* ((in (file-relative-name buffer-file-name))
-         (out (concat (file-name-sans-extension in) ".rom")))
-    (set (make-local-variable 'compile-command)
-         (concat uxntal-uxnasm-path " " in " " out))))
-
-;; set up M-x compile to call uxnasm
-(add-hook 'uxntal-mode-hook #'uxntal-assemble-buffer)
 
 ;; Constructs a table of metadata about every instruction.
 ;; This table powers uxntal-decode-instruction.
