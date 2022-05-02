@@ -2,9 +2,23 @@
 
 Emacs major mode for the [uxntal](https://wiki.xxiivv.com/site/uxntal.html) assembly language.
 
+[![MELPA](https://melpa.org/packages/uxntal-mode-badge.svg)](https://melpa.org/#/uxntal-mode)
+
 ## installing the mode
 
-Currently you must install the mode manually.
+### with use-package
+
+```elisp
+(use-package uxntal-mode)
+```
+
+### with straight.el
+
+```elisp
+(straight-use-package 'uxntal-mode)
+```
+
+### manually
 
 Copy `uxntal-mode.el` to the desired location and then modify `init.el`:
 
