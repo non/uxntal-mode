@@ -330,6 +330,29 @@
      ((string-match uxntal-mode-inst-re w) (uxntal-decode-instruction w))
      (t (message "Unknown word: `%s'" w)))))
 
+
+;; ~qux.tal -> open buffer qux.tal
+;; :foo ;foo .foo ,foo -> @foo
+;; :foo/bar ;foo/bar .foo/bar ,foo/bar -> &bar within @foo
+;; ,&foo ;&foo -> &bar within current label
+(defun uxntal-jump-to-definition ()
+  "Jump to where the given word is defined."
+  (interactive)
+  (let* ((w (current-word t t)))
+    (cond
+     ((not w) (message "No word selected"))
+     ((string-match uxntal-mode-include-re w)
+      (message "jump to new file: %s" w))
+     ((string-match uxntal-mode-addr-zeropage-re w)
+      (message "jump to absolute address: %s" w))
+     ((string-match uxntal-mode-addr-absolute-re w)
+      (message "jump to absolute address: %s" w))
+     ((string-match uxntal-mode-addr-raw-re w)
+      (message "jump to absolute address: %s" w))
+     ((string-match uxntal-mode-addr-relative-re w)
+      (message "jump to relative address: %s" w))
+     (t (message "try to jump to macro: %s" w)))))
+
 (provide 'uxntal-mode)
 
 ;;; uxntal-mode.el ends here
