@@ -233,12 +233,14 @@
   "Major mode for editing Uxntal files."
   (set-syntax-table (uxntal-create-syntax-table uxntal-mode-strict-comments))
   (uxntal-setup-compile-command)
-  (setq font-lock-defaults '(uxntal-font-lock-keywords-1 nil nil)
-        comment-start "( "
-        comment-end " )"
-        comment-quote-nested nil
-        indent-line-function #'uxntal-indent-line
-        imenu-generic-expression uxntal-imenu-generic-expression))
+  (add-hook 'uxntal-mode-hook
+            (lambda ()
+              (set (make-local-variable 'font-lock-defaults) '(uxntal-font-lock-keywords-1 nil nil))
+              (set (make-local-variable 'comment-start) "( ")
+              (set (make-local-variable 'comment-end) " )")
+              (set (make-local-variable 'comment-quote-nested) nil)
+              (set (make-local-variable 'indent-line-function) #'uxntal-indent-line)
+              (set (make-local-variable 'imenu-generic-expression) uxntal-imenu-generic-expression))))
 
 ;; Constructs a table of metadata about every instruction.
 ;; This table powers uxntal-decode-instruction.
