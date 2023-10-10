@@ -204,6 +204,17 @@
   :safe #'stringp
   :group 'uxntal)
 
+(defcustom uxntal-uxnemu-path "uxnemu"
+  "Path to run uxnemu emulator command."
+  :type 'string
+  :safe #'stringp
+  :group 'uxntal)
+
+(defcustom uxntal-uxnemu-args nil
+  "Arguments to pass to the uxnemu command."
+  :type '(repeat string)
+  :group 'uxntal)
+
 (defvar uxntal-mode-syntax-table
   (uxntal-create-syntax-table uxntal-mode-strict-comments)
   "Syntax table in use in `uxntal-mode' buffers.")
@@ -220,13 +231,28 @@
       (insert "\t")
     (insert (make-string tab-width ?\s))))
 
+;; calculcate a ROM filename from the buffer
+(defun uxntal-calculate-rom-path ()
+  (let ((name (file-relative-name buffer-file-name)))
+        (concat (file-name-sans-extension name) ".rom")))
+
 ;; set M-x compile to call uxnasm
 (defun uxntal-setup-compile-command ()
   "Set the current buffer to compile to a ROM using uxnasm."
-  (let* ((in (file-relative-name buffer-file-name))
-         (out (concat (file-name-sans-extension in) ".rom")))
+  (let ((loc (file-relative-name buffer-file-name))
+        (rom (uxntal-calculate-rom-path)))
     (set (make-local-variable 'compile-command)
-         (concat uxntal-uxnasm-path " " in " " out))))
+         (concat uxntal-uxnasm-path " " loc " " rom))))
+
+;; run uxnasm and then uxnemu
+(defun uxntal-compile-and-run ()
+  (interactive)
+  (compile compile-command)
+  (let* ((rom (uxntal-calculate-rom-path))
+         (args (append (list "uxnemu" nil uxntal-uxnemu-path)
+                       uxntal-uxnemu-args
+                       (list rom))))
+    (apply 'start-process args)))
 
 ;;;###autoload
 (define-derived-mode uxntal-mode prog-mode "Uxntal"
