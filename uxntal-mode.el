@@ -63,9 +63,9 @@
 (defconst uxntal-mode-addr-abs-re
   (rx (group bow ";" (1+ (not (in space))) eow)))
 (defconst uxntal-mode-addr-raw-zpg-re
-  (rx (group bow "_" (1+ (not (in space))) eow)))
-(defconst uxntal-mode-addr-raw-rel-re
   (rx (group bow "-" (1+ (not (in space))) eow)))
+(defconst uxntal-mode-addr-raw-rel-re
+  (rx (group bow "_" (1+ (not (in space))) eow)))
 (defconst uxntal-mode-addr-raw-abs-re
   (rx (group bow "=" (1+ (not (in space))) eow)))
 (defconst uxntal-mode-addr-raw-abs-re-legacy
